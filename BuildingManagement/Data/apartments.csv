@@ -1,0 +1,6 @@
+BuildingCode,Number,Description,RoomCount,MaxTenantCount
+B001,1,Jednosoban stan na prvom spratu,1,2
+B001,2,Dvosoban stan,2,3
+B001,3,Trosoban porodicni stan,3,5
+B002,1,Dvosoban stan sa terasom,2,4
+B002,12,Cetvorosoban penthaus,4,6

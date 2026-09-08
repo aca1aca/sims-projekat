@@ -1,0 +1,5 @@
+Jmbg,Email,Password,FirstName,LastName,MobilePhone,Role
+0101990800012,admin@sims.rs,admin123,Ana,Adamovic,+381641112233,Administrator
+1502985800077,upravnik@sims.rs,upravnik123,Marko,Milic,+381642223344,Manager
+2003995805566,stanar@sims.rs,stanar123,Jovana,Jovanovic,+381643334455,Tenant
+123,pera@sims.rs,pera123,Pera,Peric,123,Manager

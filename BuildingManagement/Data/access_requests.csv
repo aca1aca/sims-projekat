@@ -1,0 +1,4 @@
+Id,TenantJmbg,BuildingCode,ApartmentNumber,CreatedAt,Status,RejectionReason
+11111111,2003995805566,B001,2,2026-09-01T10:15:00,PendingApproval,
+22222222,2003995805566,B002,12,2026-08-20T09:30:00,Approved,
+33333333,2003995805566,B001,3,2026-07-05T14:45:00,Rejected,Stan je vec popunjen
