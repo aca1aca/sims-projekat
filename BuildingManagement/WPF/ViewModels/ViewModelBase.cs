@@ -5,7 +5,6 @@ namespace Sims.BuildingManagement.WPF.ViewModels;
 
 // Zajednicka osnova za sve ViewModel klase
 // Obavestava View o promeni vrednosti property-ja
-// kroz INotifyPropertyChanged
 
 public abstract class ViewModelBase : INotifyPropertyChanged
 {

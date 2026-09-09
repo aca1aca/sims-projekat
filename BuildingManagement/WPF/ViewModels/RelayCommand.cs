@@ -3,7 +3,7 @@ using System.Windows.Input;
 
 namespace Sims.BuildingManagement.WPF.ViewModels;
 
-// Komanda koja izvršavanje delegira prosleđenim funkcijama, 
+// Delegira izvrsavanje prosledjenim funkcijama, 
 // pa View kroz binding poziva
 // metode ViewModel-a
 
