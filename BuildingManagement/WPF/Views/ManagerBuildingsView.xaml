@@ -1,0 +1,27 @@
+<UserControl x:Class="Sims.BuildingManagement.WPF.Views.ManagerBuildingsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <DockPanel Margin="6">
+        <TextBlock DockPanel.Dock="Top" Text="Moje zgrade" FontSize="16" FontWeight="Bold" />
+        <TextBlock DockPanel.Dock="Top" TextWrapping="Wrap" Margin="4,6"
+                   Text="Zgradu na čekanju možete potvrditi (postaje vidljiva ostalima i prima zahteve) ili odbiti ako je pogrešno dodeljena." />
+
+        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,4">
+            <Button Content="Potvrdi zgradu" Command="{Binding ApproveCommand}" />
+            <Button Content="Odbij zgradu" Command="{Binding RejectCommand}" />
+        </StackPanel>
+
+        <TextBlock DockPanel.Dock="Top" Text="{Binding Message}" Foreground="#1B7F3B" Margin="4" />
+
+        <DataGrid ItemsSource="{Binding Buildings}" SelectedItem="{Binding SelectedBuilding}">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Šifra" Binding="{Binding Code}" Width="80" />
+                <DataGridTextColumn Header="Adresa" Binding="{Binding Address}" Width="*" />
+                <DataGridTextColumn Header="Naselje" Binding="{Binding Neighborhood}" Width="*" />
+                <DataGridTextColumn Header="Broj spratova" Binding="{Binding FloorCount}" Width="110" />
+                <DataGridTextColumn Header="Status"
+                                    Binding="{Binding Status, Converter={StaticResource StatusText}}" Width="130" />
+            </DataGrid.Columns>
+        </DataGrid>
+    </DockPanel>
+</UserControl>
