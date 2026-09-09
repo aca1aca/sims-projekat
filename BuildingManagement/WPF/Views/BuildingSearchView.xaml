@@ -1,0 +1,71 @@
+<UserControl x:Class="Sims.BuildingManagement.WPF.Views.BuildingSearchView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <DockPanel Margin="6">
+        <TextBlock DockPanel.Dock="Top" Text="Pretraga zgrada" FontSize="16" FontWeight="Bold" />
+
+        <Grid DockPanel.Dock="Top" Margin="0,8">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="180" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <TextBlock Grid.Row="0" Grid.Column="0" Text="Parametar pretrage" />
+            <ComboBox Grid.Row="0" Grid.Column="1" ItemsSource="{Binding FieldOptions}"
+                      DisplayMemberPath="Label" SelectedValuePath="Value"
+                      SelectedValue="{Binding Field}" />
+            <Button Grid.Row="0" Grid.Column="2" Content="Pretraži" Command="{Binding SearchCommand}" />
+
+            <TextBlock Grid.Row="1" Grid.Column="0" Text="Vrednost"
+                       Visibility="{Binding IsTextInput, Converter={StaticResource BoolToVis}}" />
+            <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding Text, UpdateSourceTrigger=PropertyChanged}"
+                     Visibility="{Binding IsTextInput, Converter={StaticResource BoolToVis}}" />
+
+            <TextBlock Grid.Row="1" Grid.Column="0" Text="Broj spratova"
+                       Visibility="{Binding IsFloorCountInput, Converter={StaticResource BoolToVis}}" />
+            <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding FloorCountText, UpdateSourceTrigger=PropertyChanged}"
+                     Visibility="{Binding IsFloorCountInput, Converter={StaticResource BoolToVis}}" />
+
+            <TextBlock Grid.Row="2" Grid.Column="0" Text="Pretraga po stanovima"
+                       Visibility="{Binding IsApartmentInput, Converter={StaticResource BoolToVis}}" />
+            <ComboBox Grid.Row="2" Grid.Column="1" ItemsSource="{Binding ApartmentFieldOptions}"
+                      DisplayMemberPath="Label" SelectedValuePath="Value"
+                      SelectedValue="{Binding ApartmentField}"
+                      Visibility="{Binding IsApartmentInput, Converter={StaticResource BoolToVis}}" />
+
+            <TextBlock Grid.Row="3" Grid.Column="0" Text="Broj soba"
+                       Visibility="{Binding IsRoomCountInput, Converter={StaticResource BoolToVis}}" />
+            <TextBox Grid.Row="3" Grid.Column="1" Text="{Binding RoomCountText, UpdateSourceTrigger=PropertyChanged}"
+                     Visibility="{Binding IsRoomCountInput, Converter={StaticResource BoolToVis}}" />
+
+            <TextBlock Grid.Row="3" Grid.Column="0" Text="Broj stanara"
+                       Visibility="{Binding IsCapacityInput, Converter={StaticResource BoolToVis}}" />
+            <TextBox Grid.Row="3" Grid.Column="1" Text="{Binding CapacityText, UpdateSourceTrigger=PropertyChanged}"
+                     Visibility="{Binding IsCapacityInput, Converter={StaticResource BoolToVis}}" />
+
+            <TextBlock Grid.Row="3" Grid.Column="0" Text="Upit (npr. 2 &amp; 3 ili 2 | 3)"
+                       Visibility="{Binding IsCombinedInput, Converter={StaticResource BoolToVis}}" />
+            <TextBox Grid.Row="3" Grid.Column="1" Text="{Binding CombinedQuery, UpdateSourceTrigger=PropertyChanged}"
+                     Visibility="{Binding IsCombinedInput, Converter={StaticResource BoolToVis}}" />
+        </Grid>
+
+        <TextBlock DockPanel.Dock="Top" Text="{Binding Message}" Foreground="#B00020" Margin="4" />
+
+        <DataGrid ItemsSource="{Binding Results}">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Šifra" Binding="{Binding Code}" Width="80" />
+                <DataGridTextColumn Header="Adresa" Binding="{Binding Address}" Width="*" />
+                <DataGridTextColumn Header="Naselje" Binding="{Binding Neighborhood}" Width="*" />
+                <DataGridTextColumn Header="Grad" Binding="{Binding City}" Width="*" />
+                <DataGridTextColumn Header="Broj spratova" Binding="{Binding FloorCount}" Width="110" />
+            </DataGrid.Columns>
+        </DataGrid>
+    </DockPanel>
+</UserControl>
