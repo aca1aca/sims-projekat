@@ -23,5 +23,5 @@ public class Apartment
 
     public bool HasRoomCount(int roomCount) => RoomCount == roomCount;
 
-    public bool CanAccommodate(int tenantCount) => MaxTenantCount >= tenantCount;
+    public bool HasMaxTenantCount(int tenantCount) => MaxTenantCount == tenantCount;
 }

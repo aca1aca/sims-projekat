@@ -43,7 +43,7 @@ public static class BuildingSearchFilter
         return criteria.ApartmentField switch
         {
             ApartmentSearchField.RoomCount => apartment.HasRoomCount(criteria.RoomCount),
-            ApartmentSearchField.TenantCapacity => apartment.CanAccommodate(criteria.TenantCapacity),
+            ApartmentSearchField.TenantCapacity => apartment.HasMaxTenantCount(criteria.TenantCapacity),
             ApartmentSearchField.RoomCountAndTenantCapacity => CombinedMatch(apartment, criteria),
             _ => false
         };
@@ -52,7 +52,7 @@ public static class BuildingSearchFilter
     private static bool CombinedMatch(Apartment apartment, BuildingSearchCriteria criteria)
     {
         bool matchesRooms = apartment.HasRoomCount(criteria.RoomCount);
-        bool matchesCapacity = apartment.CanAccommodate(criteria.TenantCapacity);
+        bool matchesCapacity = apartment.HasMaxTenantCount(criteria.TenantCapacity);
 
         return criteria.Operator == SearchOperator.And
             ? matchesRooms && matchesCapacity
