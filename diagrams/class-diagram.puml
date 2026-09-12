@@ -1,0 +1,343 @@
+@startuml class-diagram
+
+skinparam classAttributeIconSize 0
+skinparam nodesep 25
+skinparam ranksep 45
+hide empty members
+hide circle
+
+package "Domain.Models" {
+
+  enum UserRole {
+    Administrator
+    Manager
+    Tenant
+  }
+
+  enum BuildingStatus {
+    PendingApproval
+    Approved
+    Rejected
+  }
+
+  enum RequestStatus {
+    PendingApproval
+    Approved
+    Rejected
+  }
+
+  class User {
+    + Jmbg : string <<get>>
+    + Email : string <<get>>
+    + Password : string <<get>>
+    + FirstName : string <<get>>
+    + LastName : string <<get>>
+    + MobilePhone : string <<get>>
+    + Role : UserRole <<get>>
+    + FullName : string <<get>>
+    + IsAdministrator : bool <<get>>
+    + IsManager : bool <<get>>
+    + IsTenant : bool <<get>>
+    --
+    + User(jmbg:string, email:string, password:string, firstName:string, lastName:string, mobilePhone:string, role:UserRole)
+    + HasPassword(password:string) : bool
+  }
+
+  class Building {
+    + Code : string <<get>>
+    + Street : string <<get>>
+    + Number : string <<get>>
+    + Neighborhood : string <<get>>
+    + City : string <<get>>
+    + Country : string <<get>>
+    + FloorCount : int <<get>>
+    + ManagerJmbg : string <<get>>
+    + Status : BuildingStatus <<get>>
+    + Address : string <<get>>
+    + IsApproved : bool <<get>>
+    + IsPendingApproval : bool <<get>>
+    --
+    + Building(code:string, street:string, number:string, neighborhood:string, city:string, country:string, floorCount:int, managerJmbg:string, status:BuildingStatus)
+    + IsManagedBy(managerJmbg:string) : bool
+    + Approve() : void
+    + Reject() : void
+    - RequirePendingApproval() : void
+  }
+
+  class Apartment {
+    + BuildingCode : string <<get>>
+    + Number : int <<get>>
+    + Description : string <<get>>
+    + RoomCount : int <<get>>
+    + MaxTenantCount : int <<get>>
+    --
+    + Apartment(buildingCode:string, number:int, description:string, roomCount:int, maxTenantCount:int)
+    + HasRoomCount(roomCount:int) : bool
+    + HasMaxTenantCount(tenantCount:int) : bool
+  }
+
+  class AccessRequest {
+    + Id : string <<get>>
+    + TenantJmbg : string <<get>>
+    + BuildingCode : string <<get>>
+    + ApartmentNumber : int <<get>>
+    + CreatedAt : DateTime <<get>>
+    + Status : RequestStatus <<get>>
+    + RejectionReason : string <<get>>
+    + IsPending : bool <<get>>
+    + IsApproved : bool <<get>>
+    + IsRejected : bool <<get>>
+    --
+    + AccessRequest(id:string, tenantJmbg:string, buildingCode:string, apartmentNumber:int, createdAt:DateTime, status:RequestStatus, rejectionReason:string)
+    + {static} CreateNew(tenantJmbg:string, buildingCode:string, apartmentNumber:int) : AccessRequest
+    + SubmittedBy(tenantJmbg:string) : bool
+    + Targets(buildingCode:string, apartmentNumber:int) : bool
+    + Approve() : void
+    + Reject(reason:string) : void
+    - RequirePending() : void
+  }
+
+  class DomainException {
+    + DomainException(message:string)
+  }
+
+  User --> UserRole
+  Building --> BuildingStatus
+  AccessRequest --> RequestStatus
+  Building "1" -- "0..*" Apartment : preko\nApartment.BuildingCode
+  DomainException --|> Exception
+}
+
+package "Domain.RepositoryInterfaces" {
+
+  interface IUserRepository {
+    + GetAll() : List<User>
+    + GetByEmail(email:string) : User
+    + GetByJmbg(jmbg:string) : User
+    + Create(user:User) : void
+  }
+
+  interface IBuildingRepository {
+    + GetAll() : List<Building>
+    + GetByCode(code:string) : Building
+    + GetByManager(managerJmbg:string) : List<Building>
+    + Create(building:Building) : void
+    + Update(building:Building) : void
+  }
+
+  interface IApartmentRepository {
+    + GetByBuilding(buildingCode:string) : List<Apartment>
+    + Get(buildingCode:string, number:int) : Apartment
+    + Create(apartment:Apartment) : void
+  }
+
+  interface IAccessRequestRepository {
+    + GetAll() : List<AccessRequest>
+    + GetById(id:string) : AccessRequest
+    + GetByTenant(tenantJmbg:string) : List<AccessRequest>
+    + GetByBuilding(buildingCode:string) : List<AccessRequest>
+    + Create(request:AccessRequest) : void
+    + Update(request:AccessRequest) : void
+    + Delete(id:string) : void
+  }
+}
+
+package "Application.Search" {
+
+  enum BuildingSearchField {
+    Address
+    Neighborhood
+    FloorCount
+    Apartments
+  }
+
+  enum ApartmentSearchField {
+    RoomCount
+    TenantCapacity
+    RoomCountAndTenantCapacity
+  }
+
+  enum SearchOperator {
+    And
+    Or
+  }
+
+  class BuildingSearchCriteria <<DTO>> {
+    + Field : BuildingSearchField <<get>> <<set>>
+    + Text : string <<get>> <<set>>
+    + FloorCount : int <<get>> <<set>>
+    + ApartmentField : ApartmentSearchField <<get>> <<set>>
+    + RoomCount : int <<get>> <<set>>
+    + TenantCapacity : int <<get>> <<set>>
+    + Operator : SearchOperator <<get>> <<set>>
+  }
+
+  class BuildingSearchFilter <<static>> {
+    + {static} Matches(building:Building, apartments:IReadOnlyList<Apartment>, criteria:BuildingSearchCriteria) : bool
+    - {static} ContainsIgnoreCase(value:string, term:string) : bool
+    - {static} AnyApartmentMatches(apartments:IReadOnlyList<Apartment>, criteria:BuildingSearchCriteria) : bool
+    - {static} ApartmentMatches(apartment:Apartment, criteria:BuildingSearchCriteria) : bool
+    - {static} CombinedMatch(apartment:Apartment, criteria:BuildingSearchCriteria) : bool
+  }
+
+  BuildingSearchCriteria --> BuildingSearchField
+  BuildingSearchCriteria --> ApartmentSearchField
+  BuildingSearchCriteria --> SearchOperator
+  BuildingSearchFilter ..> BuildingSearchCriteria
+}
+
+package "Application.UseCases" {
+
+  class AuthenticationService {
+    - _userRepository : IUserRepository
+    --
+    + AuthenticationService(userRepository:IUserRepository)
+    + LogIn(email:string, password:string) : User
+  }
+
+  class UserService {
+    - _userRepository : IUserRepository
+    --
+    + UserService(userRepository:IUserRepository)
+    + RegisterTenant(tenant:User) : User
+    + RegisterManager(manager:User) : User
+    - RequireUniqueEmail(email:string) : void
+    - RequireUniqueJmbg(jmbg:string) : void
+    - RequireUniquePassword(password:string) : void
+  }
+
+  class BuildingService {
+    - _buildingRepository : IBuildingRepository
+    - _apartmentRepository : IApartmentRepository
+    - _userRepository : IUserRepository
+    --
+    + BuildingService(buildingRepository:IBuildingRepository, apartmentRepository:IApartmentRepository, userRepository:IUserRepository)
+    + RegisterBuilding(building:Building) : void
+    + GetApprovedBuildings() : List<Building>
+    + GetApprovedBuildingsSortedByFloorCount() : List<Building>
+    + GetBuildingsManagedBy(managerJmbg:string) : List<Building>
+    + Search(criteria:BuildingSearchCriteria) : List<Building>
+    + ApproveBuilding(buildingCode:string, managerJmbg:string) : void
+    + RejectBuilding(buildingCode:string, managerJmbg:string) : void
+    - RequireManagedBuilding(buildingCode:string, managerJmbg:string) : Building
+  }
+
+  class ApartmentService {
+    - _apartmentRepository : IApartmentRepository
+    - _buildingRepository : IBuildingRepository
+    --
+    + ApartmentService(apartmentRepository:IApartmentRepository, buildingRepository:IBuildingRepository)
+    + GetApartments(buildingCode:string) : List<Apartment>
+    + AddApartment(apartment:Apartment, managerJmbg:string) : void
+  }
+
+  class AccessRequestService {
+    - _requestRepository : IAccessRequestRepository
+    - _buildingRepository : IBuildingRepository
+    - _apartmentRepository : IApartmentRepository
+    --
+    + AccessRequestService(requestRepository:IAccessRequestRepository, buildingRepository:IBuildingRepository, apartmentRepository:IApartmentRepository)
+    + IsApartmentOccupied(buildingCode:string, apartmentNumber:int) : bool
+    + SubmitRequest(tenantJmbg:string, buildingCode:string, apartmentNumber:int) : AccessRequest
+    + GetTenantRequests(tenantJmbg:string, statusFilter:RequestStatus?) : List<AccessRequest>
+    + GetBuildingRequestsForManager(buildingCode:string, statusFilter:RequestStatus?) : List<AccessRequest>
+    + WithdrawRequest(requestId:string, tenantJmbg:string) : void
+    + ApproveRequest(requestId:string, managerJmbg:string) : void
+    + RejectRequest(requestId:string, managerJmbg:string, reason:string) : void
+    - {static} FilterByStatus(requests:List<AccessRequest>, statusFilter:RequestStatus?) : List<AccessRequest>
+    - RequireOwnRequest(requestId:string, tenantJmbg:string) : AccessRequest
+    - RequireRequestForManager(requestId:string, managerJmbg:string) : AccessRequest
+  }
+
+  BuildingService ..> BuildingSearchFilter
+  BuildingService ..> BuildingSearchCriteria
+
+  AuthenticationService --> IUserRepository
+  UserService --> IUserRepository
+  BuildingService --> IBuildingRepository
+  BuildingService --> IApartmentRepository
+  BuildingService --> IUserRepository
+  ApartmentService --> IApartmentRepository
+  ApartmentService --> IBuildingRepository
+  AccessRequestService --> IAccessRequestRepository
+  AccessRequestService --> IBuildingRepository
+  AccessRequestService --> IApartmentRepository
+}
+
+package Repositories {
+
+  class CsvFile <<static>> {
+    + {static} ReadRows(path:string) : List<string[]>
+    + {static} WriteRows(path:string, header:string[], rows:IEnumerable<string[]>) : void
+    - {static} ParseLine(line:string) : string[]
+    - {static} FormatLine(fields:string[]) : string
+    - {static} EscapeField(value:string) : string
+  }
+
+  class CsvUserRepository {
+    - _filePath : string
+    --
+    + CsvUserRepository(filePath:string)
+    + GetAll() : List<User>
+    + GetByEmail(email:string) : User
+    + GetByJmbg(jmbg:string) : User
+    + Create(user:User) : void
+    - Save(users:List<User>) : void
+    - {static} ToUser(row:string[]) : User
+    - {static} ToRow(user:User) : string[]
+  }
+
+  class CsvBuildingRepository {
+    - _filePath : string
+    --
+    + CsvBuildingRepository(filePath:string)
+    + GetAll() : List<Building>
+    + GetByCode(code:string) : Building
+    + GetByManager(managerJmbg:string) : List<Building>
+    + Create(building:Building) : void
+    + Update(building:Building) : void
+    - Save(buildings:List<Building>) : void
+    - {static} ToBuilding(row:string[]) : Building
+    - {static} ToRow(building:Building) : string[]
+  }
+
+  class CsvApartmentRepository {
+    - _filePath : string
+    --
+    + CsvApartmentRepository(filePath:string)
+    + GetByBuilding(buildingCode:string) : List<Apartment>
+    + Get(buildingCode:string, number:int) : Apartment
+    + Create(apartment:Apartment) : void
+    - GetAll() : List<Apartment>
+    - {static} ToApartment(row:string[]) : Apartment
+    - {static} ToRow(apartment:Apartment) : string[]
+  }
+
+  class CsvAccessRequestRepository {
+    - _filePath : string
+    --
+    + CsvAccessRequestRepository(filePath:string)
+    + GetAll() : List<AccessRequest>
+    + GetById(id:string) : AccessRequest
+    + GetByTenant(tenantJmbg:string) : List<AccessRequest>
+    + GetByBuilding(buildingCode:string) : List<AccessRequest>
+    + Create(request:AccessRequest) : void
+    + Update(request:AccessRequest) : void
+    + Delete(id:string) : void
+    - Save(requests:List<AccessRequest>) : void
+    - {static} ToRequest(row:string[]) : AccessRequest
+    - {static} ToRow(request:AccessRequest) : string[]
+  }
+
+  CsvUserRepository ..|> IUserRepository
+  CsvBuildingRepository ..|> IBuildingRepository
+  CsvApartmentRepository ..|> IApartmentRepository
+  CsvAccessRequestRepository ..|> IAccessRequestRepository
+
+  CsvUserRepository ..> CsvFile
+  CsvBuildingRepository ..> CsvFile
+  CsvApartmentRepository ..> CsvFile
+  CsvAccessRequestRepository ..> CsvFile
+}
+
+@enduml

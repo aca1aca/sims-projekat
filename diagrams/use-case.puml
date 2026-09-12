@@ -1,0 +1,65 @@
+@startuml use-case
+
+left to right direction
+skinparam packageStyle rectangle
+skinparam actorStyle awesome
+
+actor "Neregistrovani korisnik" as Guest
+actor "Korisnik" as User
+actor "Stanar" as Tenant
+actor "Upravnik zgrade" as Manager
+actor "Administrator" as Admin
+
+Tenant --|> User
+Manager --|> User
+Admin --|> User
+
+rectangle "Sistem za upravljanje pristupom zgradama" {
+
+  usecase "Registracija stanara" as UC_RegTenant
+  usecase "Prijava na sistem" as UC_Login
+
+  usecase "Prikaz svih zgrada" as UC_ListBuildings
+  usecase "Sortiranje po broju spratova" as UC_Sort
+  usecase "Pretraga zgrada" as UC_Search
+  usecase "Pretraga po stanovima" as UC_SearchApts
+
+  usecase "Podnošenje zahteva za pristup" as UC_Submit
+  usecase "Provera zauzetosti stana" as UC_CheckOccupied
+  usecase "Prikaz mojih zahteva" as UC_MyRequests
+  usecase "Filtriranje zahteva po statusu" as UC_FilterMy
+  usecase "Povlačenje zahteva" as UC_Withdraw
+
+  usecase "Prikaz zahteva za svoje zgrade" as UC_MgrRequests
+  usecase "Potvrda ili odbijanje zahteva" as UC_DecideRequest
+  usecase "Potvrda ili odbijanje zgrada" as UC_DecideBuilding
+  usecase "Unos stana" as UC_AddApartment
+
+  usecase "Registracija upravnika" as UC_RegManager
+  usecase "Unos zgrade" as UC_AddBuilding
+}
+
+Guest --> UC_RegTenant
+Guest --> UC_Login
+
+User --> UC_ListBuildings
+User --> UC_Search
+
+UC_Sort ..> UC_ListBuildings : <<extend>>
+UC_SearchApts ..> UC_Search : <<extend>>
+
+Tenant --> UC_Submit
+Tenant --> UC_MyRequests
+Tenant --> UC_Withdraw
+UC_Submit ..> UC_CheckOccupied : <<include>>
+UC_FilterMy ..> UC_MyRequests : <<extend>>
+
+Manager --> UC_MgrRequests
+Manager --> UC_DecideRequest
+Manager --> UC_DecideBuilding
+Manager --> UC_AddApartment
+
+Admin --> UC_RegManager
+Admin --> UC_AddBuilding
+
+@enduml
